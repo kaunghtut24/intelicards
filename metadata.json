@@ -1,0 +1,6 @@
+{
+  "name": "CogniCard: AI Contact Manager",
+  "description": "An AI-powered contact management application that uses Gemini to scan business cards and organize contacts. All data is stored locally in your browser for privacy.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
