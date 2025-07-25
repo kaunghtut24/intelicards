@@ -3,9 +3,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Contact, PartialContact } from '../types';
 import { parseBusinessCard, parseTextToContact } from '../services/geminiService';
 import { parseVcf, parseCsv } from '../services/fileParserService';
-import { IconX, IconUpload, IconSparkles, IconFileImport, IconLocation } from './icons';
+import { IconX, IconUpload, IconSparkles, IconFileImport, IconCamera } from './icons';
 import Spinner from './Spinner';
-import AddressScanModal from './AddressScanModal';
+import CameraCapture from './CameraCapture';
 
 interface ContactFormProps {
   onClose: () => void;
@@ -31,7 +31,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, onSave, contactToEdi
   const [isScanning, setIsScanning] = useState(false);
   const [isParsingFile, setIsParsingFile] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isAddressScanOpen, setIsAddressScanOpen] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   useEffect(() => {
     if (contactToEdit) {
@@ -127,14 +127,22 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, onSave, contactToEdi
     e.target.value = '';
   }, []);
 
-  const handleAddressScanned = useCallback((address: string) => {
-    setFormData(prev => ({ ...prev, address }));
-    setIsAddressScanOpen(false);
+  const handleCameraCapture = useCallback(async (base64Image: string, mimeType: string) => {
+    setIsScanning(true);
+    setError(null);
+    try {
+      const parsedData = await parseBusinessCard(base64Image, mimeType);
+      setFormData(prev => ({ ...prev, ...parsedData }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred during scanning.");
+    } finally {
+      setIsScanning(false);
+      setIsCameraOpen(false);
+    }
   }, []);
 
-  const openAddressScan = () => {
-    console.log('Opening address scan modal...');
-    setIsAddressScanOpen(true);
+  const openCamera = () => {
+    setIsCameraOpen(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -180,19 +188,47 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, onSave, contactToEdi
           
           <div className="relative border-2 border-dashed border-gray-600 rounded-lg p-6 mb-4 text-center hover:border-blue-500 transition-colors">
             {isScanning ? (
-                <div className="flex flex-col items-center justify-center h-[76px]">
+                <div className="flex flex-col items-center justify-center h-[120px]">
                     <Spinner />
                     <p className="mt-2 text-blue-400">Scanning with AI...</p>
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center h-[76px]">
-                    <IconUpload className="mx-auto h-10 w-10 text-gray-400"/>
-                    <label htmlFor="card-upload" className="relative cursor-pointer mt-2 text-sm text-blue-400 font-semibold focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-gray-800 focus-within:ring-blue-500">
-                      <span>Scan Business Card with AI</span>
-                      <IconSparkles className="inline-block h-4 w-4 ml-1" />
-                      <input id="card-upload" name="card-upload" type="file" className="sr-only" accept="image/*" onChange={handleImageUpload} />
-                    </label>
-                    <p className="text-xs text-gray-500 mt-1">Automatically fills the form from an image</p>
+                <div className="flex flex-col items-center justify-center space-y-4">
+                    <h3 className="text-lg font-semibold text-white flex items-center">
+                        Scan Business Card with AI
+                        <IconSparkles className="inline-block h-5 w-5 ml-2 text-blue-400" />
+                    </h3>
+
+                    {/* Check if device has camera */}
+                    {'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices ? (
+                        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+                            {/* Camera Option */}
+                            <button
+                                type="button"
+                                onClick={openCamera}
+                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-md transition-colors flex items-center justify-center space-x-2"
+                            >
+                                <IconCamera className="h-5 w-5" />
+                                <span>Take Photo</span>
+                            </button>
+
+                            {/* File Upload Option */}
+                            <label htmlFor="card-upload" className="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-semibold py-3 px-4 rounded-md transition-colors cursor-pointer flex items-center justify-center space-x-2">
+                                <IconUpload className="h-5 w-5" />
+                                <span>Upload Image</span>
+                                <input id="card-upload" name="card-upload" type="file" className="sr-only" accept="image/*" onChange={handleImageUpload} />
+                            </label>
+                        </div>
+                    ) : (
+                        /* Fallback for devices without camera */
+                        <label htmlFor="card-upload" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition-colors cursor-pointer flex items-center space-x-2">
+                            <IconUpload className="h-5 w-5" />
+                            <span>Upload Business Card Image</span>
+                            <input id="card-upload" name="card-upload" type="file" className="sr-only" accept="image/*" onChange={handleImageUpload} />
+                        </label>
+                    )}
+
+                    <p className="text-xs text-gray-500">Automatically fills the form from business card image</p>
                 </div>
             )}
           </div>
@@ -225,25 +261,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, onSave, contactToEdi
             <InputField name="company" label="Company" />
             <InputField name="title" label="Job Title" />
             <div className="md:col-span-2">
-              <label htmlFor="address" className="block text-sm font-medium text-gray-400 mb-1">Address</label>
-              <div className="relative">
-                <input
-                  id="address"
-                  name="address"
-                  type="text"
-                  value={formData.address}
-                  onChange={handleChange}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-md p-2 pr-12 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                  type="button"
-                  onClick={openAddressScan}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-300 p-1 rounded transition-colors"
-                  title="Scan address from image"
-                >
-                  <IconLocation className="h-5 w-5" />
-                </button>
-              </div>
+              <InputField name="address" label="Address" />
             </div>
              <div className="md:col-span-2">
               <InputField name="website" label="Website" type="url"/>
@@ -283,11 +301,11 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, onSave, contactToEdi
         </div>
       </div>
 
-      {/* Address Scan Modal */}
-      <AddressScanModal
-        isOpen={isAddressScanOpen}
-        onClose={() => setIsAddressScanOpen(false)}
-        onAddressScanned={handleAddressScanned}
+      {/* Camera Capture for Business Cards */}
+      <CameraCapture
+        isOpen={isCameraOpen}
+        onCapture={handleCameraCapture}
+        onClose={() => setIsCameraOpen(false)}
       />
     </div>
   );

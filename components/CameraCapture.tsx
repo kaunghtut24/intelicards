@@ -128,7 +128,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, isOpe
         <div className="fixed inset-0 bg-black z-50 flex flex-col">
             {/* Header */}
             <div className="flex justify-between items-center p-4 bg-gray-900/90 backdrop-blur-sm">
-                <h2 className="text-white text-lg font-semibold">Scan Address</h2>
+                <h2 className="text-white text-lg font-semibold">Scan Business Card</h2>
                 <button
                     onClick={handleClose}
                     className="text-white hover:text-gray-300 p-2"
@@ -176,7 +176,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose, isOpe
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div className="border-2 border-white border-dashed rounded-lg w-80 h-48 flex items-center justify-center">
                                 <p className="text-white text-sm bg-black/50 px-3 py-1 rounded">
-                                    Position address within frame
+                                    Position business card within frame
                                 </p>
                             </div>
                         </div>
