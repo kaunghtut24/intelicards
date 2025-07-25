@@ -124,3 +124,11 @@ export const deleteContact = (id: string): void => {
   contacts = contacts.filter(c => c.id !== id);
   localStorage.setItem(CONTACTS_KEY, JSON.stringify(contacts));
 };
+
+export const deleteMultipleContacts = (ids: string[]): void => {
+  if (ids.length === 0) return;
+  let contacts = getContacts();
+  const idsSet = new Set(ids);
+  contacts = contacts.filter(c => !idsSet.has(c.id));
+  localStorage.setItem(CONTACTS_KEY, JSON.stringify(contacts));
+};

@@ -1,16 +1,17 @@
 
 import React from 'react';
-import { IconPlus, IconSearch, IconUserGroup, IconFileCsv, IconFileImport } from './icons';
+import { IconPlus, IconSearch, IconUserGroup, IconFileCsv, IconFileImport, IconTrash } from './icons';
 
 interface HeaderProps {
   onAddContact: () => void;
   onSearch: (term: string) => void;
   onExportCsv: () => void;
   onImport: () => void;
+  onBatchDelete: () => void;
   numSelected: number;
 }
 
-const Header: React.FC<HeaderProps> = ({ onAddContact, onSearch, onExportCsv, onImport, numSelected }) => {
+const Header: React.FC<HeaderProps> = ({ onAddContact, onSearch, onExportCsv, onImport, onBatchDelete, numSelected }) => {
   return (
     <header className="bg-gray-800/50 backdrop-blur-sm h-16 flex items-center justify-between px-4 md:px-6 border-b border-gray-700 sticky top-0 z-20">
       <div className="flex items-center space-x-3">
@@ -28,6 +29,18 @@ const Header: React.FC<HeaderProps> = ({ onAddContact, onSearch, onExportCsv, on
             aria-label="Search contacts"
           />
         </div>
+        {numSelected > 0 && (
+          <button
+            onClick={onBatchDelete}
+            title={`Delete ${numSelected} selected contacts`}
+            className="flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold p-2 rounded-md transition-colors duration-200 relative"
+          >
+            <IconTrash className="h-5 w-5" />
+            <span className="ml-1.5 text-xs bg-red-800 text-white font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              {numSelected}
+            </span>
+          </button>
+        )}
          <button
           onClick={onExportCsv}
           title={numSelected > 0 ? `Export ${numSelected} selected contacts to CSV` : "Export all to CSV"}

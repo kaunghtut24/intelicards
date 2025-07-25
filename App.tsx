@@ -93,6 +93,36 @@ const App: React.FC = () => {
       loadContacts();
       handleCloseImportModal();
   };
+
+  const handleBatchDelete = () => {
+    const numSelected = selectedIds.size;
+    if (numSelected === 0) return;
+
+    const confirmMessage = numSelected === 1
+      ? 'Are you sure you want to delete this contact?'
+      : `Are you sure you want to delete ${numSelected} contacts?`;
+
+    if (window.confirm(confirmMessage)) {
+      const idsToDelete = Array.from(selectedIds);
+      contactService.deleteMultipleContacts(idsToDelete);
+
+      // Clear selection
+      setSelectedIds(new Set());
+
+      // If the currently selected contact was deleted, clear it
+      if (selectedContact && selectedIds.has(selectedContact.id)) {
+        const remainingContacts = contactService.getContacts();
+        // On desktop, select the next contact. On mobile, go back to the list.
+        if (window.innerWidth >= 768) {
+          setSelectedContact(remainingContacts.length > 0 ? remainingContacts[0] : null);
+        } else {
+          setSelectedContact(null);
+        }
+      }
+
+      loadContacts();
+    }
+  };
   
   const { allGroups, groupCounts } = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -186,7 +216,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 font-sans">
-      <Header onAddContact={() => handleOpenForm()} onSearch={setSearchTerm} onExportCsv={handleExportCsv} onImport={handleOpenImportModal} numSelected={selectedIds.size} />
+      <Header onAddContact={() => handleOpenForm()} onSearch={setSearchTerm} onExportCsv={handleExportCsv} onImport={handleOpenImportModal} onBatchDelete={handleBatchDelete} numSelected={selectedIds.size} />
       
       <main className="flex h-[calc(100vh-64px)]">
         <aside className={`w-full md:w-1/3 md:flex flex-col border-r border-gray-700 overflow-y-auto ${selectedContact ? 'hidden md:block' : 'block'}`}>
