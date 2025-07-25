@@ -3,8 +3,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Contact, PartialContact } from '../types';
 import { parseBusinessCard, parseTextToContact } from '../services/geminiService';
 import { parseVcf, parseCsv } from '../services/fileParserService';
-import { IconX, IconUpload, IconSparkles, IconFileImport } from './icons';
+import { IconX, IconUpload, IconSparkles, IconFileImport, IconLocation } from './icons';
 import Spinner from './Spinner';
+import AddressScanModal from './AddressScanModal';
 
 interface ContactFormProps {
   onClose: () => void;
@@ -30,6 +31,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, onSave, contactToEdi
   const [isScanning, setIsScanning] = useState(false);
   const [isParsingFile, setIsParsingFile] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAddressScanOpen, setIsAddressScanOpen] = useState(false);
 
   useEffect(() => {
     if (contactToEdit) {
@@ -125,6 +127,16 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, onSave, contactToEdi
     e.target.value = '';
   }, []);
 
+  const handleAddressScanned = useCallback((address: string) => {
+    setFormData(prev => ({ ...prev, address }));
+    setIsAddressScanOpen(false);
+  }, []);
+
+  const openAddressScan = () => {
+    console.log('Opening address scan modal...');
+    setIsAddressScanOpen(true);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name) {
@@ -213,7 +225,25 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, onSave, contactToEdi
             <InputField name="company" label="Company" />
             <InputField name="title" label="Job Title" />
             <div className="md:col-span-2">
-              <InputField name="address" label="Address" />
+              <label htmlFor="address" className="block text-sm font-medium text-gray-400 mb-1">Address</label>
+              <div className="relative">
+                <input
+                  id="address"
+                  name="address"
+                  type="text"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-md p-2 pr-12 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  type="button"
+                  onClick={openAddressScan}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-300 p-1 rounded transition-colors"
+                  title="Scan address from image"
+                >
+                  <IconLocation className="h-5 w-5" />
+                </button>
+              </div>
             </div>
              <div className="md:col-span-2">
               <InputField name="website" label="Website" type="url"/>
@@ -252,6 +282,13 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, onSave, contactToEdi
           </button>
         </div>
       </div>
+
+      {/* Address Scan Modal */}
+      <AddressScanModal
+        isOpen={isAddressScanOpen}
+        onClose={() => setIsAddressScanOpen(false)}
+        onAddressScanned={handleAddressScanned}
+      />
     </div>
   );
 };
