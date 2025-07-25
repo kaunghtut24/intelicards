@@ -199,7 +199,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onClose, onSave, contactToEdi
                 <label htmlFor="file-import" className="mt-4 inline-flex items-center justify-center px-4 py-2 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-blue-400 bg-gray-700/50 hover:bg-gray-700 cursor-pointer transition-colors">
                     <IconFileImport className="-ml-1 mr-2 h-5 w-5" />
                     <span>Import from file</span>
-                    <input id="file-import" name="file-import" type="file" className="sr-only" accept=".vcf,.vcard,.csv,.txt" onChange={handleFileImport} />
+                    <input id="file-import" name="file-import" type="file" className="sr-only" accept="text/vcard,.vcf,.vcard,text/csv,.csv,text/plain,.txt" onChange={handleFileImport} />
                 </label>
             )}
             <p className="text-xs text-gray-500 mt-1">Accepts .vcf, .csv, or .txt files</p>

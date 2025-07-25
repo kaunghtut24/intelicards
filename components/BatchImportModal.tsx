@@ -116,7 +116,7 @@ const BatchImportModal: React.FC<BatchImportModalProps> = ({ onClose, onImport }
                 <IconUpload className="mx-auto h-12 w-12 text-gray-400"/>
                 <label htmlFor="batch-file-upload" className="relative cursor-pointer mt-2 text-sm text-blue-400 font-semibold focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-gray-800 focus-within:ring-blue-500">
                     <span>Choose a file</span>
-                    <input id="batch-file-upload" name="batch-file-upload" type="file" className="sr-only" accept=".vcf,.vcard,.csv" onChange={handleFileChange} />
+                    <input id="batch-file-upload" name="batch-file-upload" type="file" className="sr-only" accept="text/vcard,.vcf,.vcard,text/csv,.csv" onChange={handleFileChange} />
                 </label>
                 <p className="text-xs text-gray-500 mt-1">or drag and drop</p>
                 <p className="text-xs text-gray-500">Supports multi-entry VCF and CSV files</p>
